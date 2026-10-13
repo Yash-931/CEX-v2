@@ -41,7 +41,9 @@ app.post("/order", async (req, res) => {
     }),
   );
 
-  const response = await result;
+
+  // TODO: add type here
+  const response: any = await result;
 
   res.status(201).json({
     message: "Order created success",
