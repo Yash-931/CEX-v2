@@ -22,9 +22,8 @@ await publisherClient
   .connect();
 
 app.post("/order", async (req, res) => {
-  const userId = req.userId || "";
   const identifier = Math.random()
-  const { price, qty, name, side, orderType } = req.body;
+  const { price, qty, name, side, orderType, userId } = req.body;
 
   //the order goes to the engine backend via a queue
   await publisherClient.lPush(

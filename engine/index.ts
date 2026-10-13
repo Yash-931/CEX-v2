@@ -15,3 +15,17 @@ await publisherClient
   .connect();
 
 
+while(1) {
+    const response = await subscriberClient.brPop("order-queue", 1)
+    if(!response){
+        continue
+    }
+    const parsedResponse = JSON.parse(response.element)
+
+    console.log(parsedResponse)
+
+    if(parsedResponse.orderType === "create_order") {
+        //order matching logic
+    }
+
+}
