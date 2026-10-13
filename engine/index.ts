@@ -14,18 +14,25 @@ await publisherClient
   )
   .connect();
 
+while (1) {
+  const response = await subscriberClient.brPop("order-queue", 1);
+  if (!response) {
+    continue;
+  }
+  const parsedResponse = JSON.parse(response.element);
 
-while(1) {
-    const response = await subscriberClient.brPop("order-queue", 1)
-    if(!response){
-        continue
-    }
-    const parsedResponse = JSON.parse(response.element)
+  console.log(parsedResponse);
 
-    console.log(parsedResponse)
+  if (parsedResponse.orderType === "create_order") {
+    //order matching logic
+  }
 
-    if(parsedResponse.orderType === "create_order") {
-        //order matching logic
-    }
+  const filledQty = parsedResponse.qty - 1;
+  const identifier = parsedResponse.identifier;
 
+  console.log("publishing to: response-queue-" + parsedResponse.queueId)
+  publisherClient.lPush(
+    "response-queue-" + parsedResponse.queueId,
+    JSON.stringify({ filledQty, identifier }),
+  );
 }

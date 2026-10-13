@@ -1,9 +1,10 @@
 import type { RedisClientType } from "@redis/client";
 import express from "express";
 import { createClient } from "redis";
-import { untilWeGotBack } from "./untilWeGotBackFn";
+import { queueId, untilWeGotBack } from "./untilWeGotBackFn";
 
 const app = express();
+
 
 app.use(express.json());
 
@@ -22,7 +23,7 @@ await publisherClient
   .connect();
 
 app.post("/order", async (req, res) => {
-  const identifier = Math.random()
+  const identifier = Math.random();
   const { price, qty, name, side, orderType, userId } = req.body;
 
   //the order goes to the engine backend via a queue
@@ -35,16 +36,17 @@ app.post("/order", async (req, res) => {
       side: side,
       orderType: orderType,
       userId: userId,
-      identifier: identifier
+      identifier: identifier,
+      queueId: queueId,
     }),
   );
 
-  const response = await untilWeGotBack(identifier)
+  const response = await untilWeGotBack(identifier);
 
   res.status(201).json({
     message: "Order created success",
-    filledQty: response.filledQty
-  })
+    filledQty: response.filledQty,
+  });
 });
 
-app.listen(3000);
+app.listen(3001);
