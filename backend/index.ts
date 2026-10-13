@@ -5,19 +5,18 @@ import { queueId, untilWeGotBack } from "./untilWeGotBackFn";
 
 const app = express();
 
-
 app.use(express.json());
 
 const subscriberClient: RedisClientType = createClient({});
 await subscriberClient
-  .on("Error", (err) =>
+  .on("error", (err) =>
     console.log("Error connecting the subscriber client ", err),
   )
   .connect();
 
 const publisherClient: RedisClientType = createClient({});
 await publisherClient
-  .on("Error", (err) =>
+  .on("error", (err) =>
     console.log("Error connecting the publisher client ", err),
   )
   .connect();
@@ -26,6 +25,7 @@ app.post("/order", async (req, res) => {
   const identifier = Math.random();
   const { price, qty, name, side, orderType, userId } = req.body;
 
+  const result = untilWeGotBack(identifier)
   //the order goes to the engine backend via a queue
   await publisherClient.lPush(
     "order-queue",
@@ -41,7 +41,7 @@ app.post("/order", async (req, res) => {
     }),
   );
 
-  const response = await untilWeGotBack(identifier);
+  const response = await result;
 
   res.status(201).json({
     message: "Order created success",
